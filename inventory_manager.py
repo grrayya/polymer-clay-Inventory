@@ -1,7 +1,10 @@
 import json
 import os
+from rich.console import Console
+from rich.table import Table
 
 FILE_NAME = "inventory.json"
+console = Console()
 
 def load_inventory():
     """Reads the JSON file or creates a default one if it doesn't exist."""
@@ -23,10 +26,21 @@ def save_inventory(data):
         json.dump(data, file, indent=4)
 
 def display_stock(inventory):
-    print("\n--- Current Inventory ---")
+    """Renders the current inventory as a formatted table."""
+    table = Table(title="🌸 Aesthetic Stress Relief Inventory 🌸", style="magenta")
+    
+    table.add_column("Item Name", style="cyan", justify="left")
+    table.add_column("Quantity in Stock", style="green", justify="right")
+    
     for item, quantity in inventory.items():
-        print(f"📦 {item}: {quantity} in stock")
-    print("-------------------------\n")
+        qty_str = str(quantity)
+        if quantity <= 5:
+            qty_str = f"[red]{quantity}[/red]"
+            
+        table.add_row(item, qty_str)
+        
+    console.print(table)
+    print("\n")
 
 def main():
     inventory = load_inventory()
@@ -40,7 +54,7 @@ def main():
         choice = input("Select an option: ")
         
         if choice == '1':
-            item = input("Enter item name (e.g., Glazed Penguin Charms): ")
+            item = input("Enter item name: ")
             qty = int(input("Enter amount to add/remove: "))
             
             if item in inventory:
@@ -53,7 +67,6 @@ def main():
             
         elif choice == '2':
             item = input("Enter the exact name of the item to delete: ")
-            # Using .pop() safely removes the key if it exists
             if inventory.pop(item, None) is not None:
                 save_inventory(inventory)
                 print(f"🗑️ Deleted {item} from inventory.")
