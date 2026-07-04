@@ -33,16 +33,16 @@ def main():
     
     while True:
         display_stock(inventory)
-        print("1. Update stock")
-        print("2. Exit")
+        print("1. Update stock (Add/Subtract/Create)")
+        print("2. Remove an item entirely")
+        print("3. Exit")
         
         choice = input("Select an option: ")
         
         if choice == '1':
             item = input("Enter item name (e.g., Glazed Penguin Charms): ")
-            qty = int(input("Enter amount to add/remove (use negative for sales): "))
+            qty = int(input("Enter amount to add/remove: "))
             
-            # Update the dictionary
             if item in inventory:
                 inventory[item] += qty
             else:
@@ -52,6 +52,15 @@ def main():
             print(f"✅ Updated {item}!")
             
         elif choice == '2':
+            item = input("Enter the exact name of the item to delete: ")
+            # Using .pop() safely removes the key if it exists
+            if inventory.pop(item, None) is not None:
+                save_inventory(inventory)
+                print(f"🗑️ Deleted {item} from inventory.")
+            else:
+                print(f"⚠️ Could not find '{item}'. Check your spelling.")
+                
+        elif choice == '3':
             print("Exiting tracker...")
             break
 
