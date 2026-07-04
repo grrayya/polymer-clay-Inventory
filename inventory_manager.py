@@ -42,40 +42,79 @@ def display_stock(inventory):
     console.print(table)
     print("\n")
 
+# --- Input Validation Helpers ---
+def get_valid_string(prompt):
+    """Ensures the user doesn't enter an empty or whitespace-only string."""
+    while True:
+        value = input(prompt).strip()
+        if value:
+            return value
+        print("⚠️ Input cannot be empty. Please try again.")
+
+def get_valid_int(prompt):
+    """Catches ValueErrors if the user types letters instead of numbers."""
+    while True:
+        try:
+            return int(input(prompt))
+        except ValueError:
+            print("⚠️ Invalid input. Please enter a whole number.")
+
 def main():
     inventory = load_inventory()
     
     while True:
         display_stock(inventory)
-        print("1. Update stock (Add/Subtract/Create)")
-        print("2. Remove an item entirely")
-        print("3. Exit")
+        print("1. Add or Subtract from existing stock")
+        print("2. Set exact stock level (or Create new item)")
+        print("3. Remove an item entirely")
+        print("4. Exit")
         
-        choice = input("Select an option: ")
+        choice = input("Select an option: ").strip()
         
         if choice == '1':
-            item = input("Enter item name: ")
-            qty = int(input("Enter amount to add/remove: "))
+            item = get_valid_string("Enter item name: ")
             
-            if item in inventory:
-                inventory[item] += qty
+            if item not in inventory:
+                print(f"⚠️ '{item}' doesn't exist in inventory. Use Option 2 to create it.")
+                continue
+                
+            qty = get_valid_int("Enter amount to add/remove (e.g., 5 or -3): ")
+            new_total = inventory[item] + qty
+            
+            # Guard against negative inventory
+            if new_total < 0:
+                print(f"⚠️ Cannot reduce stock below 0. Current stock is {inventory[item]}.")
+            else:
+                inventory[item] = new_total
+                save_inventory(inventory)
+                print(f"✅ Updated {item}! New total: {inventory[item]}")
+                
+        elif choice == '2':
+            item = get_valid_string("Enter item name: ")
+            qty = get_valid_int("Enter exact stock amount: ")
+            
+            # Guard against setting negative inventory
+            if qty < 0:
+                print("⚠️ Stock cannot be set to a negative number.")
             else:
                 inventory[item] = qty
+                save_inventory(inventory)
+                print(f"✅ Set {item} to {qty}!")
                 
-            save_inventory(inventory)
-            print(f"✅ Updated {item}!")
-            
-        elif choice == '2':
-            item = input("Enter the exact name of the item to delete: ")
+        elif choice == '3':
+            item = get_valid_string("Enter the exact name of the item to delete: ")
             if inventory.pop(item, None) is not None:
                 save_inventory(inventory)
                 print(f"🗑️ Deleted {item} from inventory.")
             else:
                 print(f"⚠️ Could not find '{item}'. Check your spelling.")
                 
-        elif choice == '3':
+        elif choice == '4':
             print("Exiting tracker...")
             break
+            
+        else:
+            print("⚠️ Invalid choice. Please enter 1, 2, 3, or 4.")
 
 if __name__ == "__main__":
     main()
